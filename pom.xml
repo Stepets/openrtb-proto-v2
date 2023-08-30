@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
@@ -60,6 +62,8 @@
     <protobufVersion>3.13.0</protobufVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
     <truthVersion>1.0.1</truthVersion>
+    <grpc.version>1.11.0</grpc.version>     <!--https://github.com/grpc/grpc-java/releases -->
+    <protobuf.version>3.4.0</protobuf.version>  <!-- https://github.com/google/protobuf/releases -->
 
     <!-- Plugin versions -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,16 +72,17 @@
     <!-- Protobuf properties -->
     <generatedSources>${project.basedir}/target/generated-sources</generatedSources>
     <protobufSource>${project.basedir}/src/main/protobuf</protobufSource>
+    <protobufTarget>${project.build.directory}/proto</protobufTarget>
     <protobufGenerated>${generatedSources}/protobuf</protobufGenerated>
     <testGeneratedSources>${project.basedir}/target/generated-test-sources</testGeneratedSources>
     <testProtobufSource>${project.basedir}/src/test/protobuf</testProtobufSource>
     <testProtobufGenerated>${testGeneratedSources}/protobuf</testProtobufGenerated>
 
     <adcomProtobufSource>${project.basedir}/../adcom-proto/proto</adcomProtobufSource>
-    <adcomProtobufTarget>${project.build.directory}/adcom-proto</adcomProtobufTarget>
+    <adcomProtobufTarget>${project.build.directory}/proto</adcomProtobufTarget>
 
     <iabOpenRtbProtobufSource>${project.basedir}/../iab-openrtb-proto/proto</iabOpenRtbProtobufSource>
-    <iabOpenRtbProtobufTarget>${project.build.directory}/iab-openrtb-proto</iabOpenRtbProtobufTarget>
+    <iabOpenRtbProtobufTarget>${project.build.directory}/proto</iabOpenRtbProtobufTarget>
 
     <!-- Cobertura properties -->
     <cobertura.maxmem>1G</cobertura.maxmem>
@@ -104,6 +109,13 @@
   </scm>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.4.0.Final</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
@@ -184,7 +196,8 @@
           <groups>
             <group>
               <title>OpenRTB</title>
-              <packages>com.google.openrtb:com.google.openrtb.json:com.google.openrtb.snippet:com.google.openrtb.util</packages>
+              <packages>
+                com.google.openrtb:com.google.openrtb.json:com.google.openrtb.snippet:com.google.openrtb.util</packages>
             </group>
           </groups>
         </configuration>
@@ -206,7 +219,9 @@
           <execution>
             <id>sign-artifacts</id>
             <phase>verify</phase>
-            <goals><goal>sign</goal></goals>
+            <goals>
+              <goal>sign</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

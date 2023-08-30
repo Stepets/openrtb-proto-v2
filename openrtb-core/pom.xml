@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>openrtb-core</artifactId>
@@ -89,7 +91,9 @@
           <execution>
             <id>default</id>
             <phase>generate-sources</phase>
-            <goals><goal>add-source</goal></goals>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
             <configuration>
               <sources>
                 <source>${protobufGenerated}</source>
@@ -99,7 +103,9 @@
           <execution>
             <id>test</id>
             <phase>generate-test-sources</phase>
-            <goals><goal>add-test-source</goal></goals>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
             <configuration>
               <sources>
                 <source>${testProtobufGenerated}</source>
@@ -144,6 +150,24 @@
             <version>3.2.0</version>
             <executions>
               <execution>
+                <id>copy-openrtb-resources</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${protobufTarget}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${protobufSource}</directory>
+                      <includes>
+                        <include>**/*.proto</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
                 <id>copy-adcom-resources</id>
                 <phase>initialize</phase>
                 <goals>
@@ -179,66 +203,51 @@
                   </resources>
                 </configuration>
               </execution>
+              <execution>
+                <id>copy-test-resources</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${protobufTarget}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${testProtobufSource}</directory>
+                      <includes>
+                        <include>**/*.proto</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
           <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
+            <groupId>org.xolstice.maven.plugins</groupId>
+            <artifactId>protobuf-maven-plugin</artifactId>
+            <version>0.6.1</version>
+            <configuration>
+              <protoSourceRoot>${protobufTarget}</protoSourceRoot>
+              <!--
+                        The version of protoc must match protobuf-java. If you don't depend on
+                        protobuf-java directly, you will be transitively depending on the
+                        protobuf-java version that grpc depends on.
+                        https://repo1.maven.org/maven2/com/google/protobuf/protoc/3.4.0/
+                    -->
+              <protocArtifact>
+                com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
+                    </protocArtifact>
+              <pluginId>grpc-java</pluginId>
+              <pluginArtifact>
+                io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+            </configuration>
             <executions>
               <execution>
-                <id>compile-protoc</id>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <target>
-                    <mkdir dir="${protobufGenerated}" />
-                    <path id="proto.path">
-                      <fileset dir="${protobufSource}">
-                        <include name="**/*.proto" />
-                      </fileset>
-                      <fileset dir="${adcomProtobufTarget}">
-                        <include name="**/*.proto" />
-                      </fileset>
-                      <fileset dir="${iabOpenRtbProtobufTarget}">
-                        <include name="**/*.proto" />
-                      </fileset>
-                    </path>
-                    <pathconvert pathsep=" " property="proto.files" refid="proto.path" />
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobufGenerated}" />
-                      <arg value="-I${protobufSource}" />
-                      <arg value="-I${adcomProtobufTarget}" />
-                      <arg value="-I${iabOpenRtbProtobufTarget}" />
-                      <arg line="${proto.files}" />
-                    </exec>
-                  </target>
-                </configuration>
                 <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>compile-protoc-test</id>
-                <phase>generate-test-sources</phase>
-                <configuration>
-                  <target>
-                    <mkdir dir="${testProtobufGenerated}" />
-                    <path id="proto.path">
-                      <fileset dir="${testProtobufSource}">
-                        <include name="**/*.proto" />
-                      </fileset>
-                    </path>
-                    <pathconvert pathsep=" " property="proto.files" refid="proto.path" />
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${testProtobufGenerated}" />
-                      <arg value="-I${protobufSource}" />
-                      <arg value="-I${adcomProtobufTarget}" />
-                      <arg value="-I${iabOpenRtbProtobufTarget}" />
-                      <arg value="-I${testProtobufSource}" />
-                      <arg line="${proto.files}" />
-                    </exec>
-                  </target>
-                </configuration>
-                <goals>
-                  <goal>run</goal>
+                  <goal>compile</goal>
+                  <goal>test-compile</goal>
+                  <goal>compile-custom</goal>
                 </goals>
               </execution>
             </executions>
