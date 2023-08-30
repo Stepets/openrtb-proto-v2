@@ -50,10 +50,12 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BannerAdType;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.App;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.BrandVersion;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Channel;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Content;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Data;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Data.Segment;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Device;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Dooh;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Geo;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Audio;
@@ -61,7 +63,11 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Banner;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Metric;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Native;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Pmp;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Qty;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Refresh;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Refresh.RefSettings;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Video;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Network;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Producer;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Publisher;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Regs;
@@ -120,6 +126,11 @@ public class OpenRtbJsonTest {
   }
 
   @Test
+  public void testRequest_dooh() throws IOException {
+    testRequest(newJsonFactory(), newBidRequest().setDooh(newDooh()).build());
+  }
+
+  @Test
   public void testRequest_AlternateFields() throws IOException {
     testRequest(newJsonFactory()
         .register(new OpenRtbJsonExtWriter<Test1>() {
@@ -151,7 +162,9 @@ public class OpenRtbJsonTest {
             .setPmp(Pmp.newBuilder()))
         .addImp(Imp.newBuilder().setId("0")
             .setBanner(Banner.newBuilder()
-                .addFormat(Banner.Format.newBuilder())))
+                .addFormat(Banner.Format.newBuilder()))
+            .setQty(Qty.newBuilder())
+            .setRefresh(Refresh.newBuilder().addRefsettings(RefSettings.newBuilder())))
         .setDevice(Device.newBuilder().setGeo(Geo.newBuilder())
                          .setSua(UserAgent.newBuilder()
                                           .addBrowsers(BrandVersion.newBuilder())
@@ -165,15 +178,35 @@ public class OpenRtbJsonTest {
             .setAudio(Audio.newBuilder())
             .setPmp(Pmp.newBuilder().addDeals(Pmp.Deal.newBuilder().setId("0"))))
         .addImp(Imp.newBuilder().setId("0")
-            .setVideo(Video.newBuilder().setCompanionad21(Video.CompanionAd.newBuilder())))
+            .setVideo(Video.newBuilder()
+                .setCompanionad21(Video.CompanionAd.newBuilder()))
+            .setQty(Qty.newBuilder())
+            .setRefresh(Refresh.newBuilder().addRefsettings(RefSettings.newBuilder())))
         .setSite(Site.newBuilder()
             .setContent(Content.newBuilder())
             .setPublisher(Publisher.newBuilder()))
-            .setUser(User.newBuilder().addData(Data.newBuilder().addSegment(Segment.newBuilder())))
+        .setUser(User.newBuilder().addData(Data.newBuilder().addSegment(Segment.newBuilder())))
+        .build());
+    testRequest(jsonFactory, BidRequest.newBuilder().setId("0")
+        .addImp(Imp.newBuilder().setId("0")
+            .setVideo(Video.newBuilder())
+            .setAudio(Audio.newBuilder())
+            .setPmp(Pmp.newBuilder().addDeals(Pmp.Deal.newBuilder().setId("0"))))
+        .addImp(Imp.newBuilder().setId("0")
+            .setVideo(Video.newBuilder().setCompanionad21(Video.CompanionAd.newBuilder()))
+            .setQty(Qty.newBuilder())
+            .setRefresh(Refresh.newBuilder().addRefsettings(RefSettings.newBuilder())))
+        .setDooh(Dooh.newBuilder()
+            .setContent(Content.newBuilder())
+            .setPublisher(Publisher.newBuilder()))
+        .setUser(User.newBuilder().addData(Data.newBuilder().addSegment(Segment.newBuilder())))
         .build());
     testRequest(jsonFactory, BidRequest.newBuilder().setId("0")
         .setSite(Site.newBuilder()
-            .setContent(Content.newBuilder().setProducer(Producer.newBuilder())))
+            .setContent(Content.newBuilder()
+                    .setProducer(Producer.newBuilder())
+                    .setNetwork(Network.newBuilder())
+                    .setChannel(Channel.newBuilder())))
         .build());
   }
 
@@ -575,6 +608,15 @@ public class OpenRtbJsonTest {
                 .setValue(1.0)
                 .setVendor("Google")
                 .setExtension(TestExt.testMetric, test1))
+            .setQty(Qty.newBuilder()
+                .setMultiplier(2.0)
+                .setSourcetype(1)
+                .setVendor("Vendor"))
+            .setRefresh(Refresh.newBuilder()
+                .addRefsettings(RefSettings.newBuilder()
+                    .setReftype(1)
+                    .setMinint(30))
+                .setCount(2))
             .setExtension(TestExt.testImp, test1))
         .addImp(Imp.newBuilder()
             .setId("imp2")
@@ -684,6 +726,7 @@ public class OpenRtbJsonTest {
             .setJs(true)
             .setFlashver("11")
             .setLanguage("en")
+            .setLangb("enb")
             .setCarrier("77777")
             .setConnectiontype(ConnectionType.CELL_4G.getNumber())
             .setIfa("999")
@@ -741,6 +784,7 @@ public class OpenRtbJsonTest {
         .addCur("USD")
         .addAllBcat(asList("IAB11", "IAB11-4"))
         .addBadv("badguy")
+        .setCattax(200)
         .setRegs(Regs.newBuilder()
             .setCoppa(true)
             .setGpp("gpp")
@@ -754,6 +798,7 @@ public class OpenRtbJsonTest {
         .addAllBapp(asList("app1", "app2"))
         .addAllBseat(asList("seat3", "seat4"))
         .addAllWlang(asList("en", "pt"))
+        .addAllWlangb(asList("enb", "ptb"))
         .setSource(OpenRtb.BidRequest.Source.newBuilder()
             .setFd(true)
             .setTid("tid1")
@@ -769,6 +814,7 @@ public class OpenRtbJsonTest {
         .setId("88")
         .setName("CNN")
         .setDomain("cnn.com")
+        .setCattax(100)
         .addCat("IAB1")
         .addSectioncat("IAB1-2")
         .addPagecat("IAB1-2")
@@ -780,6 +826,7 @@ public class OpenRtbJsonTest {
         .setPublisher(Publisher.newBuilder()
             .setId("pub1")
             .setName("Turner")
+            .setCattax(100)
             .addCat("IAB1")
             .setDomain("tbs.com")
             .setExtension(TestExt.testPublisher, test1))
@@ -801,6 +848,7 @@ public class OpenRtbJsonTest {
             .setProducer(Producer.newBuilder()
                 .setId("prod1")
                 .setName("Warner")
+                .setCattax(100)
                 .addCat("IAB10")
                 .setDomain("http://bros.com")
                 .setExtension(TestExt.testProducer, test1))
@@ -808,11 +856,23 @@ public class OpenRtbJsonTest {
             .setQagmediarating(MediaRating.MATURE.getNumber())
             .setEmbeddable(false)
             .setLanguage("en")
+            .setLangb("enb")
             .setArtist("Beethoven")
             .setGenre("Classical")
             .setAlbum("9th")
             .setIsrc("1234")
+            .setCattax(100)
             .setProdq(ProductionQuality.PROFESSIONAL.getNumber())
+            .setNetwork(Network.newBuilder()
+              .setId("netId")
+              .setName("netName")
+              .setDomain("netDomain")
+              .setExtension(TestExt.testNetwork, test1))
+            .setChannel(Channel.newBuilder()
+              .setId("channelId")
+              .setName("channelName")
+              .setDomain("channelDomain")
+              .setExtension(TestExt.testChannel, test1))
             .setExtension(TestExt.testContent, test1))
         .setKeywords("news,politics")
         .setExtension(TestExt.testSite, test1);
@@ -823,6 +883,7 @@ public class OpenRtbJsonTest {
         .setId("PewDiePie")
         .setName("CNN App")
         .setDomain("cnn.com")
+        .setCattax(100)
         .addCat("IAB1")
         .addSectioncat("IAB1-1")
         .addPagecat("IAB1-2")
@@ -837,6 +898,19 @@ public class OpenRtbJsonTest {
         .setExtension(TestExt.testApp, test1);
   }
 
+  static Dooh.Builder newDooh() {
+    return Dooh.newBuilder()
+        .setId("Board-1")
+        .setName("Brand name")
+        .addVenuetype("Airport")
+        .setVenuetypetax(1)
+        .setPublisher(Publisher.newBuilder().setId("pub9"))
+        .setDomain("billboard.com")
+        .setContent(Content.newBuilder().setId("cont9"))
+        .setKeywords("news,politics")
+        .setExtension(TestExt.testDooh, test1);
+  }
+
   static BidResponse.Builder newBidResponse(boolean admNative) {
     Bid.Builder bid = Bid.newBuilder()
         .setId("bid1")
@@ -848,6 +922,7 @@ public class OpenRtbJsonTest {
         .setIurl("http://mycdn.com/ad.gif")
         .setCid("cid1")
         .setCrid("crid1")
+        .setCattax(200)
         .addAttr(Attribute.TEXT_ONLY.getNumber())
         .setDealid("deal1")
         .setW(100)
@@ -862,6 +937,7 @@ public class OpenRtbJsonTest {
         .setLurl("http://losing.com/")
         .setTactic("abc")
         .setLanguage("en")
+        .setLanguage("enb")
         .setWratio(100)
         .setHratio(85)
         .setExtension(TestExt.testBid, test1);

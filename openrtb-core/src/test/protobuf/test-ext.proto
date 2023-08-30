@@ -32,6 +32,9 @@ extend com.iabtechlab.openrtb.v2.BidRequest.App {
 extend com.iabtechlab.openrtb.v2.BidRequest.BrandVersion {
   optional Test1 testBrandVersion = 110;
 }
+extend com.iabtechlab.openrtb.v2.BidRequest.Channel {
+  optional Test1 testChannel = 110;
+}
 extend com.iabtechlab.openrtb.v2.BidRequest.Content {
   optional Test1 testContent = 110;
 }
@@ -59,6 +62,15 @@ extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Banner.Format {
 extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Metric {
   optional Test1 testMetric = 110;
 }
+extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Qty {
+  optional Test1 testQty = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Refresh {
+  optional Test1 testRefresh = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Refresh.RefSettings {
+  optional Test1 testRefSettings = 110;
+}
 extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Video {
   optional Test1 testVideo = 110;
 }
@@ -77,6 +89,9 @@ extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Pmp {
 extend com.iabtechlab.openrtb.v2.BidRequest.Imp.Pmp.Deal {
   optional Test1 testDeal = 110;
 }
+extend com.iabtechlab.openrtb.v2.BidRequest.Network {
+  optional Test1 testNetwork = 110;
+}
 extend com.iabtechlab.openrtb.v2.BidRequest.Producer {
   optional Test1 testProducer = 110;
 }
@@ -88,6 +103,9 @@ extend com.iabtechlab.openrtb.v2.BidRequest.Regs {
 }
 extend com.iabtechlab.openrtb.v2.BidRequest.Site {
   optional Test1 testSite = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.Dooh {
+  optional Test1 testDooh = 110;
 }
 extend com.iabtechlab.openrtb.v2.BidRequest.Source {
   optional Test1 testSource = 110;

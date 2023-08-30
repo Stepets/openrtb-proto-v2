@@ -34,9 +34,11 @@ import com.iabtechlab.openrtb.v2.Gender;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.App;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.BrandVersion;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Channel;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Content;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Data;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Data.Segment;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Dooh;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Device;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Geo;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp;
@@ -47,8 +49,12 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Metric;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Native;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Pmp;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Pmp.Deal;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Qty;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Refresh;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Refresh.RefSettings;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Video;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Video.CompanionAd;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Network;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Producer;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Publisher;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Regs;
@@ -144,6 +150,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "app":
         req.setApp(readApp(par));
         break;
+      case "dooh":
+        req.setDooh(readDooh(par));
+        break;
       case "device":
         req.setDevice(readDevice(par));
         break;
@@ -180,6 +189,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
           }
         }
         break;
+      case "cattax":
+        req.setCattax(par.getIntValue());
+        break;
       case "badv":
         for (startArray(par); endArray(par); par.nextToken()) {
           req.addBadv(par.getText());
@@ -201,6 +213,11 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "wlang":
         for (startArray(par); endArray(par); par.nextToken()) {
           req.addWlang(par.getText());
+        }
+        break;
+      case "wlangb":
+        for (startArray(par); endArray(par); par.nextToken()) {
+          req.addWlangb(par.getText());
         }
         break;
       case "source":
@@ -344,6 +361,15 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
           imp.addMetric(readMetric(par));
         }
         break;
+      case "qty":
+        imp.setQty(readQty(par));
+        break;
+      case "dt":
+        imp.setDt(par.getValueAsDouble());
+        break;
+      case "refresh":
+        imp.setRefresh(readRefresh(par));
+        break;
       default:
         readOther(imp, par, fieldName);
     }
@@ -374,6 +400,86 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       default:
         readOther(metric, par, fieldName);
+    }
+  }
+
+  public final Qty.Builder readQty(JsonParser par) throws IOException {
+    Qty.Builder qty = Qty.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readQtyField(par, qty, fieldName);
+      }
+    }
+    return qty;
+  }
+
+  protected void readQtyField(JsonParser par, Qty.Builder qty, String fieldName)
+      throws IOException {
+    switch (fieldName) {
+      case "multiplier":
+        qty.setMultiplier(par.getValueAsDouble());
+        break;
+      case "sourcetype":
+        qty.setSourcetype(par.getIntValue());
+        break;
+      case "vendor":
+        qty.setVendor(par.getText());
+        break;
+      default:
+        readOther(qty, par, fieldName);
+    }
+  }
+
+  public final Refresh.Builder readRefresh(JsonParser par) throws IOException {
+    Refresh.Builder refresh = Refresh.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readRefreshField(par, refresh, fieldName);
+      }
+    }
+    return refresh;
+  }
+
+  protected void readRefreshField(JsonParser par, Refresh.Builder refresh, String fieldName)
+      throws IOException {
+    switch (fieldName) {
+      case "refsettings":
+        for (startArray(par); endArray(par); par.nextToken()) {
+          refresh.addRefsettings(readRefSettings(par));
+        }
+        break;
+      case "count":
+        refresh.setCount(par.getIntValue());
+        break;
+      default:
+        readOther(refresh, par, fieldName);
+    }
+  }
+
+  public final RefSettings.Builder readRefSettings(JsonParser par) throws IOException {
+    RefSettings.Builder refSettings = RefSettings.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readRefSettingsField(par, refSettings, fieldName);
+      }
+    }
+    return refSettings;
+  }
+
+  protected void readRefSettingsField(JsonParser par, RefSettings.Builder refSettings, String fieldName)
+      throws IOException {
+    switch (fieldName) {
+      case "reftype":
+        refSettings.setReftype(par.getIntValue());
+        break;
+      case "minint":
+        refSettings.setMinint(par.getIntValue());
+        break;
+      default:
+        readOther(refSettings, par, fieldName);
     }
   }
 
@@ -862,6 +968,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "domain":
         site.setDomain(par.getText());
         break;
+      case "cattax":
+        site.setCattax(par.getIntValue());
+        break;
       case "cat":
         for (startArray(par); endArray(par); par.nextToken()) {
           String cat = par.getText();
@@ -941,6 +1050,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "domain":
         app.setDomain(par.getText());
         break;
+      case "cattax":
+        app.setCattax(par.getIntValue());
+        break;
       case "storeurl":
         app.setStoreurl(par.getText());
         break;
@@ -991,6 +1103,51 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
     }
   }
 
+  public final Dooh.Builder readDooh(JsonParser par) throws IOException {
+    Dooh.Builder dooh = Dooh.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readDoohField(par, dooh, fieldName);
+      }
+    }
+    return dooh;
+  }
+
+  protected void readDoohField(JsonParser par, Dooh.Builder dooh, String fieldName)
+      throws IOException {
+    switch (fieldName) {
+      case "id":
+        dooh.setId(par.getText());
+        break;
+      case "name":
+        dooh.setName(par.getText());
+        break;
+      case "domain":
+        dooh.setDomain(par.getText());
+        break;
+      case "venuetype":
+        for (startArray(par); endArray(par); par.nextToken()) {
+          dooh.addVenuetype(par.getText());
+        }
+        break;
+      case "venuetypetax":
+        dooh.setVenuetypetax(par.getIntValue());
+        break;
+      case "publisher":
+        dooh.setPublisher(readPublisher(par));
+        break;
+      case "content":
+        dooh.setContent(readContent(par));
+        break;
+      case "keywords":
+        dooh.setKeywords(readCsvString(par));
+        break;
+      default:
+        readOther(dooh, par, fieldName);
+    }
+  }
+
   public final Content.Builder readContent(JsonParser par) throws IOException {
     Content.Builder content = Content.newBuilder();
     for (startObject(par); endObject(par); par.nextToken()) {
@@ -1026,6 +1183,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       case "url":
         content.setUrl(par.getText());
+        break;
+      case "cattax":
+        content.setCattax(par.getIntValue());
         break;
       case "cat":
         for (startArray(par); endArray(par); par.nextToken()) {
@@ -1070,6 +1230,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "language":
         content.setLanguage(par.getText());
         break;
+      case "langb":
+        content.setLangb(par.getText());
+        break;
       case "embeddable":
         content.setEmbeddable(par.getValueAsBoolean());
         break;
@@ -1093,8 +1256,68 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
           content.addData(readData(par));
         }
         break;
+      case "network":
+        content.setNetwork(readNetwork(par));
+        break;
+      case "channel":
+        content.setChannel(readChannel(par));
+        break;
       default:
         readOther(content, par, fieldName);
+    }
+  }
+
+  public final Channel.Builder readChannel(JsonParser par) throws IOException {
+    Channel.Builder network = Channel.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readChannelField(par, network, fieldName);
+      }
+    }
+    return network;
+  }
+
+  protected void readChannelField(JsonParser par, Channel.Builder channel, String fieldName) throws IOException {
+    switch (fieldName) {
+      case "id":
+        channel.setId(par.getText());
+        break;
+      case "name":
+        channel.setName(par.getText());
+        break;
+      case "domain":
+        channel.setDomain(par.getText());
+        break;
+      default:
+        readOther(channel, par, fieldName);
+    }
+  }
+
+  public final Network.Builder readNetwork(JsonParser par) throws IOException {
+    Network.Builder network = Network.newBuilder();
+    for (startObject(par); endObject(par); par.nextToken()) {
+      String fieldName = getCurrentName(par);
+      if (par.nextToken() != JsonToken.VALUE_NULL) {
+        readNetworkField(par, network, fieldName);
+      }
+    }
+    return network;
+  }
+
+  protected void readNetworkField(JsonParser par, Network.Builder network, String fieldName) throws IOException {
+    switch (fieldName) {
+      case "id":
+        network.setId(par.getText());
+        break;
+      case "name":
+        network.setName(par.getText());
+        break;
+      case "domain":
+        network.setDomain(par.getText());
+        break;
+      default:
+        readOther(network, par, fieldName);
     }
   }
 
@@ -1117,6 +1340,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       case "name":
         producer.setName(par.getText());
+        break;
+      case "cattax":
+        producer.setCattax(par.getIntValue());
         break;
       case "cat":
         for (startArray(par); endArray(par); par.nextToken()) {
@@ -1153,6 +1379,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       case "name":
         publisher.setName(par.getText());
+        break;
+      case "cattax":
+        publisher.setCattax(par.getIntValue());
         break;
       case "cat":
         for (startArray(par); endArray(par); par.nextToken()) {
@@ -1240,6 +1469,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       case "language":
         device.setLanguage(par.getText());
+        break;
+      case "langb":
+        device.setLangb(par.getText());
         break;
       case "carrier":
         device.setCarrier(par.getText());
@@ -1686,6 +1918,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
       case "crid":
         bid.setCrid(par.getText());
         break;
+      case "cattax":
+        bid.setCattax(par.getIntValue());
+        break;
       case "cat":
         for (startArray(par); endArray(par); par.nextToken()) {
           String cat = par.getText();
@@ -1731,6 +1966,9 @@ public class OpenRtbJsonReader extends AbstractOpenRtbJsonReader {
         break;
       case "language":
         bid.setLanguage(par.getText());
+        break;
+      case "langb":
+        bid.setLangb(par.getText());
         break;
       case "wratio":
         bid.setWratio(par.getIntValue());

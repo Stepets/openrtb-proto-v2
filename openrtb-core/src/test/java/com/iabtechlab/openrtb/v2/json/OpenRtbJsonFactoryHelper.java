@@ -21,9 +21,11 @@ import com.iabtechlab.openrtb.v2.OpenRtb;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.App;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.BrandVersion;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Channel;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Content;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Data;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Device;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Dooh;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Geo;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Audio;
@@ -31,6 +33,7 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Banner;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Native;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Pmp;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Imp.Video;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Network;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Producer;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Publisher;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Regs;
@@ -85,12 +88,18 @@ class OpenRtbJsonFactoryHelper {
         .register(new Test2Reader<>(TestExt.testRequest2, "test2ext"), BidRequest.Builder.class)
         .register(new Test1Reader<>(TestExt.testApp), App.Builder.class)
         .register(new Test1Reader<>(TestExt.testContent), Content.Builder.class)
+        .register(new Test1Reader<>(TestExt.testChannel), Channel.Builder.class)
+        .register(new Test1Reader<>(TestExt.testNetwork), Network.Builder.class)
         .register(new Test1Reader<>(TestExt.testProducer), Producer.Builder.class)
         .register(new Test1Reader<>(TestExt.testPublisher), Publisher.Builder.class)
         .register(new Test1Reader<>(TestExt.testDevice), Device.Builder.class)
+        .register(new Test1Reader<>(TestExt.testDooh), Dooh.Builder.class)
         .register(new Test1Reader<>(TestExt.testGeo), Geo.Builder.class)
         .register(new Test1Reader<>(TestExt.testImp), Imp.Builder.class)
         .register(new Test1Reader<>(TestExt.testMetric), Imp.Metric.Builder.class)
+        .register(new Test1Reader<>(TestExt.testQty), Imp.Qty.Builder.class)
+        .register(new Test1Reader<>(TestExt.testRefresh), Imp.Refresh.Builder.class)
+        .register(new Test1Reader<>(TestExt.testRefSettings), Imp.Refresh.RefSettings.Builder.class)
         .register(new Test1Reader<>(TestExt.testBanner), Banner.Builder.class)
         .register(new Test1Reader<>(TestExt.testFormat), Banner.Format.Builder.class)
         .register(new Test1Reader<>(TestExt.testNative), Native.Builder.class)
@@ -113,6 +122,7 @@ class OpenRtbJsonFactoryHelper {
         .register(new Test2Writer("test2ext"), Test2.class, BidRequest.class)
         .register(new Test1Writer(), Test1.class, App.class)
         .register(new Test1Writer(), Test1.class, Device.class)
+        .register(new Test1Writer(), Test1.class, Dooh.class)
         .register(new Test1Writer(), Test1.class, Site.class)
         .register(new Test1Writer(), Test1.class, User.class)
         .register(new Test1Writer(), Test1.class, Geo.class)
@@ -120,9 +130,14 @@ class OpenRtbJsonFactoryHelper {
         .register(new Test1Writer(), Test1.class, Data.Segment.class)
         .register(new Test1Writer(), Test1.class, Publisher.class)
         .register(new Test1Writer(), Test1.class, Content.class)
+        .register(new Test1Writer(), Test1.class, Channel.class)
+        .register(new Test1Writer(), Test1.class, Network.class)
         .register(new Test1Writer(), Test1.class, Producer.class)
         .register(new Test1Writer(), Test1.class, Imp.class)
         .register(new Test1Writer(), Test1.class, Imp.Metric.class)
+        .register(new Test1Writer(), Test1.class, Imp.Qty.class)
+        .register(new Test1Writer(), Test1.class, Imp.Refresh.class)
+        .register(new Test1Writer(), Test1.class, Imp.Refresh.RefSettings.class)
         .register(new Test1Writer(), Test1.class, Banner.class)
         .register(new Test1Writer(), Test1.class, Banner.Format.class)
         .register(new Test1Writer(), Test1.class, Video.class)
