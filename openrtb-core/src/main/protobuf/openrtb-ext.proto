@@ -60,7 +60,7 @@ message DsaRequest {
   // without DSA object will be accepted, 2 = Required, bid responses without
   // DSA object will not be accepted, 3 = Required, bid responses without DSA
   // object will not be accepted, Publisher is an Online Platform.
-  optional int32 dsainfo = 1;
+  optional int32 required = 1;
 
   // Flag to indicate if the publisher will render the DSA Transparency info.
   // This will signal if the publisher is able to and intends to render the
@@ -368,7 +368,7 @@ message DsaResponse {
   // Flag to indicate that buyer/advertiser will render their own DSA
   // transparency information inside the creative. 0 = buyer/advertiser will
   // not render, 1 = buyer/advertiser will render.
-  optional boolean adrender = 4;
+  optional bool adrender = 4;
 }
 
 // Ad Exchange extensions for the Bid object.
