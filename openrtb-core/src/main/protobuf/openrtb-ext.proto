@@ -18,6 +18,67 @@ package com.iabtechlab.openrtb.v2;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+message Transparency {
+  // Domain of the entity that applied user parameters.
+  optional string domain = 1;
+
+  // Array for platform or sell-side use of any user parameters (using the list
+  // provided by DSA Transparency Taskforce). Note; See definition and list of
+  // possible user parameters as listed here, applied consistently in both bid
+  // request and/or bid response.
+  repeated int32 params = 2;
+
+  // Convenience values used in the 'params' field.
+  enum Params {
+    Params_UNKNOWN = 0;
+
+    // Information about the user, collected and used across contexts, that is
+    // about the user's activity, interests, demographic information, or other
+    // characteristics.
+    PROFILING = 1;
+
+    // Use of real-time information about the context in which the ad will be
+    // shown, to show the ad, including information about the content and the
+    // device, such as: device type and capabilities, user agent, URL, IP
+    // address, non-precise geolocation data. Additionally, use of basic
+    // cross-context information not based on user behavior or user
+    // characteristics, for uses such as frequency capping, sequencing, brand
+    // safety, anti-fraud.
+    BASIC_ADVERTISING = 2;
+
+    // The precise real-time geolocation of the user, i.e. GPS coordinates
+    // within 500 meter radius precision.
+    PRECISE_GEOLOCATION = 3;
+  }
+}
+
+message DsaRequest {
+  // Flag to indicate if DSA information should be made available. This will
+  // signal if the bid request belongs to an Online Platform/VLOP, such that a
+  // buyer should respond with DSA Transparency information based on the
+  // pubrender value. 0 = Not required, 1 = Supported, bid responses with or
+  // without DSA object will be accepted, 2 = Required, bid responses without
+  // DSA object will not be accepted, 3 = Required, bid responses without DSA
+  // object will not be accepted, Publisher is an Online Platform.
+  optional int32 required = 1;
+
+  // Flag to indicate if the publisher will render the DSA Transparency info.
+  // This will signal if the publisher is able to and intends to render the
+  // icon and display the DSA transparency info to the end user. 0 = Publisher
+  // can't render, 1 = Publisher could render depending on adrender, 2 =
+  // Publisher will render.
+  optional int32 pubrender = 2;
+
+  // Independent of pubrender, the publisher may need the transparency data for
+  // audit purposes. 0 = do not send transparency data, 1 = optional to send
+  // transparency data, 2 = send transparency data.
+  optional int32 datatopub = 3;
+
+  // Array of objects of the entities that applied user parameters and the
+  // parameters they applied.
+  repeated Transparency transparency = 4;
+}
+
 // Ad Exchange extensions for the Regs object.
 message RegsExt {
   // Callers should fill this field solely based on whether the impression
@@ -37,11 +98,45 @@ message RegsExt {
   // from the request. No other usage of this field is valid. E.g., vendors 
   // are not to copy the GPC signal from the GPP string to this field.
   optional string gpc = 3;
+
+  // Extension for DSA transparency information.
+  optional DsaRequest dsa = 4;
 }
 
 extend com.iabtechlab.openrtb.v2.BidRequest.Regs {
   // Extension key for the Adx Regs.ext
   optional RegsExt regs = 201;
+}
+
+message UniversalId {
+  // Cookie or platform-native identifier.
+  optional string id = 1;
+
+  // Type of user agent the match is from.  It is highly recommended to set
+  // this, as many DSPs separate app-native IDs from browser-based IDs and
+  // require a type value for ID resolution.
+  // Refer to enum com.iabtechlab.adcom.v1.enums.AgentType for generic values.
+  optional int32 atype = 2;
+
+  // Extensions.
+  extensions 100 to 9999;
+}
+
+// Extended identifiers support in the OpenRTB specification allows buyers to
+// use audience data in real-time bidding.  The exchange should ensure that
+// business agreements allow for the sending of this data.  Note, it is
+// assumed that exchanges and DSPs will collaborate with the appropriate
+// regulatory agencies and ID vendor(s) to ensure compliance.
+message ExtendedId {
+  // Source or technology provider responsible for the set of included IDs.
+  // Expressed as a top-level domain.
+  optional string source = 1;
+
+  // Array of extended ID UID objects from the given source.
+  repeated UniversalId uids = 2;
+
+  // Extensions.
+  extensions 100 to 9999;
 }
 
 // Ad Exchange extensions for the User object.
@@ -52,7 +147,7 @@ message UserExt {
   optional string consent = 1 [deprecated = true];
 
   // Extended (third-party) identifiers for this user.
-  repeated com.iabtechlab.openrtb.v2.BidRequest.User.EID eids = 2 [deprecated = true];
+  repeated ExtendedId eids = 2 [deprecated = true];
 }
 
 extend com.iabtechlab.openrtb.v2.BidRequest.User {
@@ -78,7 +173,56 @@ message SupplyChain {
   // seller ID involved in the transaction, i.e. the owner of the site, app, or
   // other medium. In an incomplete supply chain, it represents the first known
   // node. The last node represents the entity sending this bid request.
-  repeated com.iabtechlab.openrtb.v2.BidRequest.Source.SupplyChain.SupplyChainNode nodes = 3;
+  repeated SupplyChainNode nodes = 3;
+
+  // Extensions.
+  extensions 100 to 9999;
+}
+
+// This object is associated with a SupplyChain object as an array of nodes.
+// These nodes define the identity of an entity participating in the supply
+// chain of a bid request.
+message SupplyChainNode {
+  // The canonical domain name of the SSP, Exchange, Header Wrapper, etc system
+  // that bidders connect to. This may be the operational domain of the system,
+  // if that is different than the parent corporate domain, to facilitate WHOIS
+  // and reverse IP lookups to establish clear ownership of the delegate system.
+  // This should be the same value as used to identify sellers in an ads.txt
+  // file if one exists.
+  optional string asi = 1;
+
+  // The identifier associated with the seller or reseller account within the
+  // advertising system. This must contain the same value used in transactions
+  // (i.e. OpenRTB bid requests) in the field specified by the SSP/exchange.
+  // Typically, in OpenRTB, this is publisher.id. For OpenDirect it is typically
+  // the publisher’s organization ID. Should be limited to 64 characters in
+  // length.
+  optional string sid = 2;
+
+  // The OpenRTB RequestId of the request as issued by this seller.
+  optional string rid = 3;
+
+  // The name of the company (the legal entity) that is paid for inventory
+  // transacted under the given seller_id. This value is optional and should NOT
+  // be included if it exists in the advertising system’s sellers.json file.
+  optional string name = 4;
+
+  // The business domain name of the entity represented by this node. This value
+  // is optional and should NOT be included if it exists in the advertising
+  // system’s sellers.json file.
+  optional string domain = 5;
+
+  // Indicates whether this node will be involved in the flow of payment for the
+  // inventory. When set to 1, the advertising system in the asi field pays the
+  // seller in the sid field, who is responsible for paying the previous node in
+  // the chain. When set to 0, this node is not involved in the flow of payment
+  // for the inventory. For version 1.0 of SupplyChain, this property should
+  // always be 1. It is explicitly required to be included as it is expected
+  // that future versions of the specification will introduce non-payment
+  // handling nodes. Implementers should ensure that they support this field and
+  // propagate it onwards when constructing SupplyChain objects in bid requests
+  // sent to a downstream advertising system.
+  optional bool hp = 6;
 
   // Extensions.
   extensions 100 to 9999;
@@ -287,10 +431,33 @@ message SKAdNetworkResponse {
   extensions 100 to 9999;
 }
 
+message DsaResponse {
+  // Advertiser Transparency: Free UNICODE text string with a name of whose
+  // behalf the ad is displayed. Maximum 100 characters.
+  optional string behalf = 1;
+
+  // Advertiser Transparency: Free UNICODE text string of who paid for the ad.
+  // Must always be included even if it's the same as what is listed in the
+  // behalf attribute. Maximum 100 characters.
+  optional string paid = 2;
+
+  // Array of objects of the entities that applied user parameters and the
+  // parameters they applied.
+  repeated Transparency transparency = 3;
+
+  // Flag to indicate that buyer/advertiser will render their own DSA
+  // transparency information inside the creative. 0 = buyer/advertiser will
+  // not render, 1 = buyer/advertiser will render.
+  optional bool adrender = 4;
+}
+
 // Ad Exchange extensions for the Bid object.
 message BidExt {
   // Advertiser's SKAdNetwork information.
   optional SKAdNetworkResponse skadn = 1;
+
+  // Extension for DSA transparency information.
+  optional DsaResponse dsa = 2;
 }
 
 extend com.iabtechlab.openrtb.v2.BidResponse.SeatBid.Bid {
