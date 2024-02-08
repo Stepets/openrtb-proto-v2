@@ -26,11 +26,11 @@ message Transparency {
   // provided by DSA Transparency Taskforce). Note; See definition and list of
   // possible user parameters as listed here, applied consistently in both bid
   // request and/or bid response.
-  repeated int32 params = 2;
+  repeated int32 dsaparams = 2;
 
-  // Convenience values used in the 'params' field.
-  enum Params {
-    Params_UNKNOWN = 0;
+  // Convenience values used in the 'dsaparams' field.
+  enum DsaParams {
+    DsaParams_UNKNOWN = 0;
 
     // Information about the user, collected and used across contexts, that is
     // about the user's activity, interests, demographic information, or other
@@ -60,7 +60,7 @@ message DsaRequest {
   // without DSA object will be accepted, 2 = Required, bid responses without
   // DSA object will not be accepted, 3 = Required, bid responses without DSA
   // object will not be accepted, Publisher is an Online Platform.
-  optional int32 required = 1;
+  optional int32 dsarequired = 1;
 
   // Flag to indicate if the publisher will render the DSA Transparency info.
   // This will signal if the publisher is able to and intends to render the
