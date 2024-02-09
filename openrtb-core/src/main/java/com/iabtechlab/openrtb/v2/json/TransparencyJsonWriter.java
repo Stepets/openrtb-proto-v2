@@ -31,7 +31,7 @@ public class TransparencyJsonWriter {
             gen.writeStringField("domain", transparency.getDomain());
         }
 
-        writeParams(transparency.getParamsList(), gen);
+        writeParams(transparency.getDsaparamsList(), gen);
     }
 
     private void writeParams(List<Integer> params, JsonGenerator gen) throws IOException {
@@ -39,7 +39,7 @@ public class TransparencyJsonWriter {
             return;
         }
 
-        gen.writeArrayFieldStart("params");
+        gen.writeArrayFieldStart("dsaparams");
         for (Integer param : params) {
             gen.writeNumber(param);
         }

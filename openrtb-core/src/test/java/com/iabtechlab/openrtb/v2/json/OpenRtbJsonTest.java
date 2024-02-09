@@ -870,13 +870,13 @@ public class OpenRtbJsonTest {
 
   static OpenRtbExt.DsaRequest.Builder newDsaRequest() {
     return OpenRtbExt.DsaRequest.newBuilder()
-                                .setRequired(1)
+                                .setDsarequired(1)
                                 .setDatatopub(1)
                                 .setPubrender(2)
                                 .addAllTransparency(Arrays.asList(OpenRtbExt.Transparency.getDefaultInstance(),
                                                                   OpenRtbExt.Transparency.newBuilder()
                                                                                          .setDomain("someDomain")
-                                                                                         .addAllParams(Arrays.asList(1, 2, 3))
+                                                                                         .addAllDsaparams(Arrays.asList(1, 2, 3))
                                                                                          .build()));
   }
 

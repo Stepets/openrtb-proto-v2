@@ -55,8 +55,8 @@ public class OpenRtbRegsExtJsonReader extends OpenRtbJsonExtComplexReader<OpenRt
                                JsonParser jsonParser,
                                String fieldName) throws IOException {
         switch (fieldName) {
-            case "required":
-                builder.setRequired(jsonParser.getIntValue());
+            case "dsarequired":
+                builder.setDsarequired(jsonParser.getIntValue());
                 break;
             case "pubrender":
                 builder.setPubrender(jsonParser.getIntValue());

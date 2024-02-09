@@ -34,10 +34,10 @@ public class TransparencyJsonReader {
             case "domain":
                 builder.setDomain(jsonParser.getText());
                 break;
-            case "params":
+            case "dsaparams":
                 if (jsonParser.isExpectedStartArrayToken()) {
                     for (startArray(jsonParser); endArray(jsonParser); jsonParser.nextToken()) {
-                        builder.addParams(jsonParser.getIntValue());
+                        builder.addDsaparams(jsonParser.getIntValue());
                     }
                 }
                 break;

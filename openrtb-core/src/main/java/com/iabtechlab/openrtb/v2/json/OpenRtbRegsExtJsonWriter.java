@@ -33,8 +33,8 @@ public class OpenRtbRegsExtJsonWriter extends OpenRtbJsonExtWriter<RegsExt> {
     }
 
     private void writeDsaFields(OpenRtbExt.DsaRequest dsaRequest, JsonGenerator gen) throws IOException {
-        if (dsaRequest.hasRequired()) {
-            gen.writeNumberField("required", dsaRequest.getRequired());
+        if (dsaRequest.hasDsarequired()) {
+            gen.writeNumberField("dsarequired", dsaRequest.getDsarequired());
         }
 
         if (dsaRequest.hasPubrender()) {
