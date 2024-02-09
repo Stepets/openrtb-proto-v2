@@ -17,6 +17,7 @@
 package com.iabtechlab.openrtb.v2.json;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -837,7 +838,10 @@ public class OpenRtbJsonTest {
             .setGdpr(true)
             .setUsPrivacy("us_privacy")
             .setExtension(TestExt.testRegs, test1)
-            .setExtension(OpenRtbExt.regs, OpenRtbExt.RegsExt.newBuilder().setGpc("gpcValue").build()))
+            .setExtension(OpenRtbExt.regs, OpenRtbExt.RegsExt.newBuilder()
+                                                             .setGpc("gpcValue")
+                                                             .setDsa(newDsaRequest())
+                                                             .build()))
         .setTest(false)
         .addAllBapp(asList("app1", "app2"))
         .addAllBseat(asList("seat3", "seat4"))
@@ -862,6 +866,18 @@ public class OpenRtbJsonTest {
             .setExtension(TestExt.testSource, test1))
         .setExtension(TestExt.testRequest2, test2)
         .setExtension(TestExt.testRequest1, test1);
+  }
+
+  static OpenRtbExt.DsaRequest.Builder newDsaRequest() {
+    return OpenRtbExt.DsaRequest.newBuilder()
+                                .setDsarequired(1)
+                                .setDatatopub(1)
+                                .setPubrender(2)
+                                .addAllTransparency(Arrays.asList(OpenRtbExt.Transparency.getDefaultInstance(),
+                                                                  OpenRtbExt.Transparency.newBuilder()
+                                                                                         .setDomain("someDomain")
+                                                                                         .addAllDsaparams(Arrays.asList(1, 2, 3))
+                                                                                         .build()));
   }
 
   @SuppressWarnings("deprecation")

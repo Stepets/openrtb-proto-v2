@@ -94,8 +94,8 @@ message RegsExt {
   // This is to be populated the value of the `Sec-GPC` HTTP header from
   // the user agent where the ad will be shown. Vendors with access to that
   // header must populate this field with that value. Vendors receiving an
-  // OpenRTB request must populate this with the value of the same field 
-  // from the request. No other usage of this field is valid. E.g., vendors 
+  // OpenRTB request must populate this with the value of the same field
+  // from the request. No other usage of this field is valid. E.g., vendors
   // are not to copy the GPC signal from the GPP string to this field.
   optional string gpc = 3;
 
