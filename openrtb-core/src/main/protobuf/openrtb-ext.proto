@@ -18,6 +18,67 @@ package com.iabtechlab.openrtb.v2;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+message Transparency {
+  // Domain of the entity that applied user parameters.
+  optional string domain = 1;
+
+  // Array for platform or sell-side use of any user parameters (using the list
+  // provided by DSA Transparency Taskforce). Note; See definition and list of
+  // possible user parameters as listed here, applied consistently in both bid
+  // request and/or bid response.
+  repeated int32 dsaparams = 2;
+
+  // Convenience values used in the 'dsaparams' field.
+  enum DsaParams {
+    DsaParams_UNKNOWN = 0;
+
+    // Information about the user, collected and used across contexts, that is
+    // about the user's activity, interests, demographic information, or other
+    // characteristics.
+    PROFILING = 1;
+
+    // Use of real-time information about the context in which the ad will be
+    // shown, to show the ad, including information about the content and the
+    // device, such as: device type and capabilities, user agent, URL, IP
+    // address, non-precise geolocation data. Additionally, use of basic
+    // cross-context information not based on user behavior or user
+    // characteristics, for uses such as frequency capping, sequencing, brand
+    // safety, anti-fraud.
+    BASIC_ADVERTISING = 2;
+
+    // The precise real-time geolocation of the user, i.e. GPS coordinates
+    // within 500 meter radius precision.
+    PRECISE_GEOLOCATION = 3;
+  }
+}
+
+message DsaRequest {
+  // Flag to indicate if DSA information should be made available. This will
+  // signal if the bid request belongs to an Online Platform/VLOP, such that a
+  // buyer should respond with DSA Transparency information based on the
+  // pubrender value. 0 = Not required, 1 = Supported, bid responses with or
+  // without DSA object will be accepted, 2 = Required, bid responses without
+  // DSA object will not be accepted, 3 = Required, bid responses without DSA
+  // object will not be accepted, Publisher is an Online Platform.
+  optional int32 dsarequired = 1;
+
+  // Flag to indicate if the publisher will render the DSA Transparency info.
+  // This will signal if the publisher is able to and intends to render the
+  // icon and display the DSA transparency info to the end user. 0 = Publisher
+  // can't render, 1 = Publisher could render depending on adrender, 2 =
+  // Publisher will render.
+  optional int32 pubrender = 2;
+
+  // Independent of pubrender, the publisher may need the transparency data for
+  // audit purposes. 0 = do not send transparency data, 1 = optional to send
+  // transparency data, 2 = send transparency data.
+  optional int32 datatopub = 3;
+
+  // Array of objects of the entities that applied user parameters and the
+  // parameters they applied.
+  repeated Transparency transparency = 4;
+}
+
 // Ad Exchange extensions for the Regs object.
 message RegsExt {
   // Callers should fill this field solely based on whether the impression
@@ -37,6 +98,9 @@ message RegsExt {
   // from the request. No other usage of this field is valid. E.g., vendors 
   // are not to copy the GPC signal from the GPP string to this field.
   optional string gpc = 3;
+
+  // Extension for DSA transparency information.
+  optional DsaRequest dsa = 4;
 }
 
 extend com.iabtechlab.openrtb.v2.BidRequest.Regs {
@@ -287,10 +351,33 @@ message SKAdNetworkResponse {
   extensions 100 to 9999;
 }
 
+message DsaResponse {
+  // Advertiser Transparency: Free UNICODE text string with a name of whose
+  // behalf the ad is displayed. Maximum 100 characters.
+  optional string behalf = 1;
+
+  // Advertiser Transparency: Free UNICODE text string of who paid for the ad.
+  // Must always be included even if it's the same as what is listed in the
+  // behalf attribute. Maximum 100 characters.
+  optional string paid = 2;
+
+  // Array of objects of the entities that applied user parameters and the
+  // parameters they applied.
+  repeated Transparency transparency = 3;
+
+  // Flag to indicate that buyer/advertiser will render their own DSA
+  // transparency information inside the creative. 0 = buyer/advertiser will
+  // not render, 1 = buyer/advertiser will render.
+  optional bool adrender = 4;
+}
+
 // Ad Exchange extensions for the Bid object.
 message BidExt {
   // Advertiser's SKAdNetwork information.
   optional SKAdNetworkResponse skadn = 1;
+
+  // Extension for DSA transparency information.
+  optional DsaResponse dsa = 2;
 }
 
 extend com.iabtechlab.openrtb.v2.BidResponse.SeatBid.Bid {
