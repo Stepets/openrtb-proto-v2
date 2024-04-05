@@ -1456,7 +1456,7 @@ public class OpenRtbJsonWriter extends AbstractOpenRtbJsonWriter {
       gen.writeStringField("domain", supplyChainNode.getDomain());
     }
     if (supplyChainNode.hasHp()) {
-      gen.writeBooleanField("hp", supplyChainNode.getHp());
+      writeIntBoolField("hp", supplyChainNode.getHp(), gen);
     }
   }
 
