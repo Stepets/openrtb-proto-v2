@@ -239,7 +239,7 @@ public class OpenRtbJsonWriter extends AbstractOpenRtbJsonWriter {
       writePmp(imp.getPmp(), gen);
     }
     if (imp.hasClickbrowser()) {
-      gen.writeBooleanField("clickbrowser", imp.getClickbrowser());
+      writeIntBoolField("clickbrowser", imp.getClickbrowser(), gen);
     }
     if (imp.hasExp()) {
       gen.writeNumberField("exp", imp.getExp());
