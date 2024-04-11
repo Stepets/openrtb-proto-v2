@@ -5,6 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.iabtechlab.openrtb.v2.OpenRtbExt;
 
+import static com.iabtechlab.openrtb.v2.json.OpenRtbJsonUtils.writeIntBoolField;
+
 public class DsaResponseJsonWriter {
 
     private final TransparencyJsonWriter transparencyJsonWriter;
@@ -33,7 +35,7 @@ public class DsaResponseJsonWriter {
         transparencyJsonWriter.writeTransparencies(dsaResponse.getTransparencyList(), jsonGenerator);
 
         if (dsaResponse.hasAdrender()) {
-            jsonGenerator.writeBooleanField("adrender", dsaResponse.getAdrender());
+            writeIntBoolField("adrender", dsaResponse.getAdrender(), jsonGenerator);
         }
     }
 }
