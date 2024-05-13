@@ -16,9 +16,8 @@
 
 package com.iabtechlab.openrtb.v2.json;
 
-import static com.google.common.truth.Truth.assertThat;
-import static com.iabtechlab.openrtb.v2.json.OpenRtbJsonFactoryHelper.newJsonFactory;
-import static java.util.Arrays.asList;
+import java.io.IOException;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -72,7 +71,12 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Producer;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Publisher;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Regs;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Site;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Source;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Source.SupplyChain;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.Source.SupplyChain.SupplyChainNode;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.User;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.User.EID;
+import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.User.EID.UID;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidRequest.UserAgent;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidResponse;
 import com.iabtechlab.openrtb.v2.OpenRtb.BidResponse.SeatBid;
@@ -80,16 +84,21 @@ import com.iabtechlab.openrtb.v2.OpenRtb.BidResponse.SeatBid.Bid;
 import com.iabtechlab.openrtb.v2.OpenRtb.NativeRequest;
 import com.iabtechlab.openrtb.v2.OpenRtb.NativeResponse;
 import com.iabtechlab.openrtb.v2.OpenRtbExt;
+import com.iabtechlab.openrtb.v2.OpenRtbExt.ImpExt;
 import com.iabtechlab.openrtb.v2.Test.Test1;
 import com.iabtechlab.openrtb.v2.Test.Test2;
 import com.iabtechlab.openrtb.v2.TestExt;
 import com.iabtechlab.openrtb.v2.TestUtil;
 import com.iabtechlab.openrtb.v3.Enums.AuctionType;
 import com.iabtechlab.openrtb.v3.Enums.NoBidReason;
-import java.io.IOException;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.common.truth.Truth.assertThat;
+import static com.iabtechlab.openrtb.v2.json.OpenRtbJsonFactoryHelper.newJsonFactory;
+import static java.util.Arrays.asList;
 
 /**
  * Tests for {@link OpenRtbJsonFactory}, {@link OpenRtbJsonReader}, {@link OpenRtbJsonWriter}.
@@ -185,7 +194,14 @@ public class OpenRtbJsonTest {
         .setSite(Site.newBuilder()
             .setContent(Content.newBuilder())
             .setPublisher(Publisher.newBuilder()))
-        .setUser(User.newBuilder().addData(Data.newBuilder().addSegment(Segment.newBuilder())))
+        .setUser(User.newBuilder()
+            .addData(Data.newBuilder()
+                .addSegment(Segment.newBuilder()))
+            .addEids(EID.newBuilder()
+                .addUids(UID.newBuilder())))
+        .setSource(Source.newBuilder()
+            .setSchain(SupplyChain.newBuilder()
+                .addNodes(SupplyChainNode.newBuilder())))
         .build());
     testRequest(jsonFactory, BidRequest.newBuilder().setId("0")
         .addImp(Imp.newBuilder().setId("0")
@@ -608,6 +624,8 @@ public class OpenRtbJsonTest {
                 .setValue(1.0)
                 .setVendor("Google")
                 .setExtension(TestExt.testMetric, test1))
+            .setRwdd(true)
+            .setSsai(3)
             .setQty(Qty.newBuilder()
                 .setMultiplier(2.0)
                 .setSourcetype(1)
@@ -656,6 +674,14 @@ public class OpenRtbJsonTest {
                 .setSkipafter(10)
                 .setPlacement(VideoPlacementSubtype.IN_FEED.getNumber())
                 .setPlaybackend(PlaybackCessationMode.ON_EXIT_FLOAT.getNumber())
+                .setMaxseq(4)
+                .setPoddur(60)
+                .setPodid("pod_1")
+                .setPodseq(1)
+                .addRqddurs(15)
+                .setSlotinpod(2)
+                .setMincpmpersec(60.0)
+                .setPlcmt(34)
                 .setExtension(TestExt.testVideo, test1)))
         .addImp(Imp.newBuilder()
             .setId("imp3")
@@ -672,7 +698,7 @@ public class OpenRtbJsonTest {
                 .setMinbitrate(1000)
                 .setMaxbitrate(2000)
                 .addDelivery(DeliveryMethod.STREAMING.getNumber())
-                .addCompanionad(OpenRtb.BidRequest.Imp.Banner.newBuilder()
+                .addCompanionad(Banner.newBuilder()
                     .setId("compad1")
                     .setW(100)
                     .setH(50))
@@ -682,7 +708,15 @@ public class OpenRtbJsonTest {
                 .setFeed(FeedType.PODCAST.getNumber())
                 .setStitched(true)
                 .setNvol(VolumeNormalizationMode.LOUDNESS_NORMALIZATION.getNumber())
-                .setExtension(TestExt.testAudio, OpenRtbJsonFactoryHelper.test1)))
+                .setPoddur(60)
+                .addRqddurs(15)
+                .setPodid("pod_1")
+                .setPodseq(1)
+                .setSlotinpod(2)
+                .setMincpmpersec(45.0)
+                .setExtension(TestExt.testAudio, OpenRtbJsonFactoryHelper.test1))
+                .setExtension(OpenRtbExt.imp,
+                              ImpExt.newBuilder().setAe(ImpExt.AuctionEnvironment.SERVER_SIDE_AUCTION_VALUE).build()))
         .addImp(Imp.newBuilder()
             .setId("imp4")
             .setNative(Native.newBuilder()
@@ -691,7 +725,10 @@ public class OpenRtbJsonTest {
                 .addApi(APIFramework.MRAID_1_0.getNumber())
                 .addBattr(Attribute.TEXT_ONLY.getNumber())
                 .setExtension(TestExt.testNative, test1))
-            .setExtension(TestExt.testImp, test1))
+            .setExtension(TestExt.testImp, test1)
+            .setExtension(OpenRtbExt.imp,
+                          ImpExt.newBuilder().setAe(ImpExt.AuctionEnvironment.ON_DEVICE_INTEREST_GROUP_AUCTION_VALUE)
+                                .build()))
         .setDevice(Device.newBuilder()
             .setUa("Chrome")
             .setGeo(Geo.newBuilder()
@@ -709,6 +746,7 @@ public class OpenRtbJsonTest {
                 .setLastfix(15)
                 .setIpservice(LocationService.IP2LOCATION.getNumber())
                 .setExtension(TestExt.testGeo, test1))
+                .setExtension(OpenRtbExt.device, OpenRtbExt.DeviceExt.newBuilder().setCdep("cdepValue").build())
             .setDnt(false)
             .setLmt(false)
             .setIp("192.168.1.0")
@@ -776,6 +814,13 @@ public class OpenRtbJsonTest {
                     .setExtension(TestExt.testSegment, test1))
                 .setExtension(TestExt.testData, test1))
             .setConsent("consent")
+            .addEids(EID.newBuilder()
+                .setSource("source")
+                .addUids(UID.newBuilder()
+                    .setId("id")
+                    .setAtype(12)
+                    .setExtension(TestExt.testUID, test1))
+                .setExtension(TestExt.testEID, test1))
             .setExtension(TestExt.testUser, test1))
         .setAt(AuctionType.SECOND_PRICE_PLUS.getNumber())
         .setTmax(100)
@@ -793,19 +838,46 @@ public class OpenRtbJsonTest {
             .setGdpr(true)
             .setUsPrivacy("us_privacy")
             .setExtension(TestExt.testRegs, test1)
-            .setExtension(OpenRtbExt.regs, OpenRtbExt.RegsExt.newBuilder().setGpc("gpcValue").build()))
+            .setExtension(OpenRtbExt.regs, OpenRtbExt.RegsExt.newBuilder()
+                                                             .setGpc("gpcValue")
+                                                             .setDsa(newDsaRequest())
+                                                             .build()))
         .setTest(false)
         .addAllBapp(asList("app1", "app2"))
         .addAllBseat(asList("seat3", "seat4"))
         .addAllWlang(asList("en", "pt"))
         .addAllWlangb(asList("enb", "ptb"))
-        .setSource(OpenRtb.BidRequest.Source.newBuilder()
+        .setSource(Source.newBuilder()
             .setFd(true)
             .setTid("tid1")
             .setPchain("XYZ01234:ABCD56789")
+            .setSchain(SupplyChain.newBuilder()
+                .setComplete(true)
+                .setVer("1.0")
+                .addNodes(SupplyChainNode.newBuilder()
+                    .setAsi("asi")
+                    .setSid("sid")
+                    .setRid("rid")
+                    .setName("name")
+                    .setDomain("domain")
+                    .setHp(true)
+                    .setExtension(TestExt.testSupplyChainNode, test1))
+                .setExtension(TestExt.testSupplyChain, test1))
             .setExtension(TestExt.testSource, test1))
         .setExtension(TestExt.testRequest2, test2)
         .setExtension(TestExt.testRequest1, test1);
+  }
+
+  static OpenRtbExt.DsaRequest.Builder newDsaRequest() {
+    return OpenRtbExt.DsaRequest.newBuilder()
+                                .setDsarequired(1)
+                                .setDatatopub(1)
+                                .setPubrender(2)
+                                .addAllTransparency(Arrays.asList(OpenRtbExt.Transparency.getDefaultInstance(),
+                                                                  OpenRtbExt.Transparency.newBuilder()
+                                                                                         .setDomain("someDomain")
+                                                                                         .addAllDsaparams(Arrays.asList(1, 2, 3))
+                                                                                         .build()));
   }
 
   @SuppressWarnings("deprecation")
@@ -940,6 +1012,10 @@ public class OpenRtbJsonTest {
         .setLanguage("enb")
         .setWratio(100)
         .setHratio(85)
+        .addApis(1)
+        .setDur(30)
+        .setMtype(2)
+        .setSlotinpod(1)
         .setExtension(TestExt.testBid, test1);
     if (admNative) {
       bid.setAdmNative(NativeResponse.newBuilder()

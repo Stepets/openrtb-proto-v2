@@ -169,6 +169,86 @@ message BidRequest {
     // RECOMMENDED by the OpenRTB specification.
     optional string pchain = 3;
 
+    // This object represents both the links in the supply chain as well as an
+    // indicator whether or not the supply chain is complete.
+    message SupplyChain {
+      // Flag indicating whether the chain contains all nodes involved in the
+      // transaction leading back to the owner of the site, app or other medium
+      // of the inventory, where 0 = no, 1 = yes.
+      optional bool complete = 1;
+
+      // Version of the supply chain specification in use, in the format of
+      // “major.minor”. For example, for version 1.0 of the spec, use the string
+      // “1.0”.
+      optional string ver = 3;
+
+      // This object is associated with a SupplyChain object as an array of
+      // nodes. These nodes define the identity of an entity participating in
+      // the supply chain of a bid request.
+      message SupplyChainNode {
+        // The canonical domain name of the SSP, Exchange, Header Wrapper, etc
+        // system that bidders connect to. This may be the operational domain
+        // of the system, if that is different than the parent corporate
+        // domain, to facilitate WHOIS and reverse IP lookups to establish
+        // clear ownership of the delegate system. This should be the same
+        // value as used to identify sellers in an ads.txt file if one exists.
+        optional string asi = 1;
+
+        // The identifier associated with the seller or reseller account within
+        // the advertising system. This must contain the same value used in
+        // transactions (i.e. OpenRTB bid requests) in the field specified by
+        // the SSP/exchange. Typically, in OpenRTB, this is publisher.id. For
+        // OpenDirect it is typically the publisher’s organization ID. Should
+        // be limited to 64 characters in length.
+        optional string sid = 2;
+
+        // The OpenRTB RequestId of the request as issued by this seller.
+        optional string rid = 3;
+
+        // The name of the company (the legal entity) that is paid for
+        // inventory transacted under the given seller_id. This value is
+        // optional and should NOT be included if it exists in the advertising
+        // system’s sellers.json file.
+        optional string name = 4;
+
+        // The business domain name of the entity represented by this node.
+        // This value is optional and should NOT be included if it exists in
+        // the advertising system’s sellers.json file.
+        optional string domain = 5;
+
+        // Indicates whether this node will be involved in the flow of payment
+        // for the inventory. When set to 1, the advertising system in the asi
+        // field pays the seller in the sid field, who is responsible for
+        // paying the previous node in the chain. When set to 0, this node is
+        // not involved in the flow of payment for the inventory. For version
+        // 1.0 of SupplyChain, this property should always be 1. It is
+        // explicitly required to be included as it is expected that future
+        // versions of the specification will introduce non-payment handling
+        // nodes. Implementers should ensure that they support this field and
+        // propagate it onwards when constructing SupplyChain objects in bid
+        // requests sent to a downstream advertising system.
+        optional bool hp = 6;
+
+        // Extensions.
+        extensions 100 to 9999;
+      }
+
+      // Array of SupplyChainNode objects in the order of the chain. In a
+      // complete supply chain, the first node represents the initial
+      // advertising system and seller ID involved in the transaction, i.e. the
+      // owner of the site, app, or other medium. In an incomplete supply chain,
+      // it represents the first known node. The last node represents the entity
+      // sending this bid request.
+      repeated SupplyChainNode nodes = 2;
+
+      // Extensions.
+      extensions 100 to 9999;
+    }
+
+    // This object represents both the links in the supply chain as well as an
+    // indicator whether or not the supply chain is complete.
+    optional SupplyChain schain = 4;
+
     // Extensions.
     extensions 100 to 9999;
   }
@@ -240,6 +320,20 @@ message BidRequest {
 
     // Array of exchange-specific names of supported iframe busters.
     repeated string iframebuster = 10;
+
+    // Indicates whether the user receives a reward for viewing the ad, where 0
+    // = no, 1 = yes. Typically video ad implementations allow users to read an
+    // additional news article for free, receive an extra life in a game, or get
+    // a sponsored ad-free music session. The reward is typically distributed
+    // after the video ad is completed.
+    optional bool rwdd = 18 [default = false];
+
+    // Indicates if server-side ad insertion (e.g., stitching an ad into an
+    // audio or video stream) is in use and the impact of this on asset and
+    // tracker retrieval, where 0 = status unknown, 1 = all client-side (i.e.,
+    // not server-side), 2 = assets stitched server-side but tracking pixels
+    // fired client-side, 3 = all server-side.
+    optional int32 ssai = 19 [default = 0];
 
     // A Pmp object (Section 3.2.17) containing any private marketplace deals
     // in effect for this impression.
@@ -474,6 +568,20 @@ message BidRequest {
       // RECOMMENDED by the OpenRTB specification.
       optional int32 startdelay = 8;
 
+      // Indicates the maximum number of ads that may be served into a
+      // “dynamic” video ad pod (where the precise number of ads is not
+      // predetermined by the seller).
+      optional int32 maxseq = 28;
+
+      // Indicates the total amount of time in seconds that advertisers may
+      // fill for a “dynamic” video ad pod (See Section 7.6 for more details),
+      // or the dynamic portion of a “hybrid” ad pod. This field is required
+      // only for the dynamic portion(s) of video ad pods. This field refers to
+      // the length of the entire ad break, whereas
+      // minduration/maxduration/rqddurs are constraints relating to the slots
+      // that make up the pod.
+      optional int32 poddur = 29;
+
       // Indicates if the player will allow the video to be skipped,
       // where 0 = no, 1 = yes.
       // If a bidder sends markup/creative that is itself skippable, the
@@ -492,7 +600,16 @@ message BidRequest {
       // If multiple ad impressions are offered in the same bid request,
       // the sequence number will allow for the coordinated delivery of
       // multiple creatives.
-      optional int32 sequence = 9 [default = 1];
+      optional int32 sequence = 9 [default = 1, deprecated = true];
+
+      // For video ad pods, this value indicates that the seller can guarantee
+      // delivery against the indicated slot position in the pod.
+      optional int32 slotinpod = 33 [default = 0];
+
+      // Minimum CPM per second. This is a price floor for the "dynamic"
+      // portion of a video ad pod, relative to the duration of bids an
+      // advertiser may submit.
+      optional double mincpmpersec = 34;
 
       // Blocked creative attributes.
       // Refer to enum com.iabtechlab.adcom.v1.enums.Creative.Attribute for generic values.
@@ -549,9 +666,30 @@ message BidRequest {
       // Refer to enum com.iabtechlab.adcom.v1.CompanionType for generic values.
       repeated int32 companiontype = 20 [packed = true];
 
+      // Unique identifier indicating that an impression opportunity belongs to
+      // a video ad pod. If multiple impression opportunities within a bid
+      // request share the same podid, this indicates that those impression
+      // opportunities belong to the same video ad pod.
+      optional string podid = 30;
+
+      // The sequence (position) of the video ad pod within a content stream.
+      optional int32 podseq = 31 [default = 0];
+
+      // Precise acceptable durations for video creatives in seconds. This
+      // field specifically targets the Live TV use case where non-exact ad
+      // durations would result in undesirable ‘dead air’. This field is
+      // mutually exclusive with minduration and maxduration; if rqddurs is
+      // specified, minduration and maxduration must not be specified and vice
+      // versa.
+      repeated int32 rqddurs = 32 [packed = true];
+
       // Placement type for the impression.
       // Refer to enum com.iabtechlab.adcom.v1.VideoPlacementSubtype for generic values.
-      optional int32 placement = 26;
+      optional int32 placement = 26 [deprecated = true];
+
+      // Video placement type for the impression.
+      // Refer to enum com.iabtechlab.adcom.v1.VideoPlcmtSubtype for generic values.
+      optional int32 plcmt = 35;
 
       // The event that causes playback to end.
       // Refer to enum com.iabtechlab.adcom.v1.PlaybackCessationMode for generic values.
@@ -593,6 +731,15 @@ message BidRequest {
       // RECOMMENDED by the OpenRTB specification.
       optional int32 maxduration = 3;
 
+      // Indicates the total amount of time in seconds that advertisers may
+      // fill for a “dynamic” video ad pod (See Section 7.6 for more details),
+      // or the dynamic portion of a “hybrid” ad pod. This field is required
+      // only for the dynamic portion(s) of video ad pods. This field refers to
+      // the length of the entire ad break, whereas
+      // minduration/maxduration/rqddurs are constraints relating to the slots
+      // that make up the pod.
+      optional int32 poddur = 25;
+
       // Array of supported audio protocols.
       // Refer to enum com.iabtechlab.adcom.v1.Creative.AudioVideoType for generic values.
       // RECOMMENDED by the OpenRTB specification.
@@ -604,10 +751,36 @@ message BidRequest {
       // RECOMMENDED by the OpenRTB specification.
       optional int32 startdelay = 5;
 
+      // Precise acceptable durations for audio creatives in seconds. This
+      // field specifically targets the live audio/radio use case where
+      // non-exact ad durations would result in undesirable 'dead air'. This
+      // field is mutually exclusive with minduraiton and maxduration; if
+      // rqddurs is specified, minduraiton and maxduration must not be
+      // specified and vice versa.
+      repeated int32 rqddurs = 26 [packed = true];
+
+      // Unique identifier indicating that an impression opportunity belongs to
+      // an audio ad pod. If multiple impression opportunities within a bid
+      // request share the same podid, this indicates that those impression
+      // opportunities belong to the same audio ad pod.
+      optional string podid = 27;
+
+      // The sequence (position) of the audio ad pod within a content stream.
+      optional int32 podseq = 28 [default = 0];
+
       // If multiple ad impressions are offered in the same bid request,
       // the sequence number will allow for the coordinated delivery of
       // multiple creatives.
-      optional int32 sequence = 6 [default = 1];
+      optional int32 sequence = 6 [default = 1, deprecated = true];
+
+      // For audio ad pods, this value indicates that the seller can guarantee
+      // delivery against the indicated slot position in the pod.
+      optional int32 slotinpod = 29 [default = 0];
+
+      // Minimum CPM per second. This is a price floor for the “dynamic”
+      // portion of an audio ad pod, relative to the duration of bids an
+      // advertiser may submit.
+      optional double mincpmpersec = 30;
 
       // Blocked creative attributes.
       // Refer to enum com.iabtechlab.adcom.v1.enums.Creative.Attribute for generic values.
@@ -1518,6 +1691,41 @@ message BidRequest {
     // Transparency and Consent Framework’s Consent String data structure.
     optional string consent = 10;
 
+    // Extended identifiers support in the OpenRTB specification allows buyers
+    // to use audience data in real-time bidding.  The exchange should ensure
+    // that business agreements allow for the sending of this data.  Note, it
+    // is assumed that exchanges and DSPs will collaborate with the appropriate
+    // regulatory agencies and ID vendor(s) to ensure compliance.
+    message EID {
+      // Source or technology provider responsible for the set of included IDs.
+      // Expressed as a top-level domain.
+      optional string source = 1;
+
+      message UID {
+        // Cookie or platform-native identifier.
+        optional string id = 1;
+
+        // Type of user agent the match is from.  It is highly recommended to
+        // set this, as many DSPs separate app-native IDs from browser-based
+        // IDs and require a type value for ID resolution.
+        // Refer to enum com.iabtechlab.adcom.v1.enums.AgentType for generic values.
+        optional int32 atype = 2;
+
+        // Extensions.
+        extensions 100 to 9999;
+      }
+
+      // Array of extended ID UID objects from the given source.
+      repeated UID uids = 2;
+
+      // Extensions.
+      extensions 100 to 9999;
+    }
+
+    // Details for support of a standard protocol for multiple third party
+    // identity providers.
+    repeated EID eids = 11;
+
     // Extensions.
     extensions 100 to 9999;
   }
@@ -1731,9 +1939,14 @@ message BidResponse {
       // Refer to enum com.iabtechlab.adcom.v1.enums.Creative.Attribute for generic values.
       repeated int32 attr = 11 [packed = true];
 
+      // List of supported APIs for the markup. If an API is not explicitly
+      // listed, it is assumed to be unsupported.
+      // Refer to enum com.iabtechlab.adcom.v1.enums.APIFramework for generic values.
+      repeated int32 apis = 31 [packed = true];
+
       // API required by the markup if applicable.
       // Refer to enum com.iabtechlab.adcom.v1.enums.APIFramework for generic values.
-      optional int32 api = 18;
+      optional int32 api = 18 [deprecated = true];
 
       // Video response protocol of the markup if applicable.
       // Refer to enum com.iabtechlab.adcom.v1.Creative.AudioVideoType for generic values.
@@ -1793,6 +2006,18 @@ message BidResponse {
       // Relative height of the creative when expressing size as a ratio.
       // Required for Flex Ads.
       optional int32 hratio = 27;
+
+      // Duration of the video or audio creative in seconds.
+      optional int32 dur = 32;
+
+      // Type of the creative markup so that it can properly be associated with
+      // the right sub-object of the BidRequest.Imp.
+      optional int32 mtype = 33;
+
+      // Indicates that the bid response is only eligible for a specific
+      // position within a video or audio ad pod (e.g. first position, last
+      // position, or any).
+      optional int32 slotinpod = 28 [default = 0];
 
       // Extensions.
       extensions 100 to 9999;

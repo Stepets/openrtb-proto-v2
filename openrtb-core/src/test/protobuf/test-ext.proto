@@ -110,8 +110,20 @@ extend com.iabtechlab.openrtb.v2.BidRequest.Dooh {
 extend com.iabtechlab.openrtb.v2.BidRequest.Source {
   optional Test1 testSource = 110;
 }
+extend com.iabtechlab.openrtb.v2.BidRequest.Source.SupplyChain {
+  optional Test1 testSupplyChain = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.Source.SupplyChain.SupplyChainNode {
+  optional Test1 testSupplyChainNode = 110;
+}
 extend com.iabtechlab.openrtb.v2.BidRequest.User {
   optional Test1 testUser = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.User.EID {
+  optional Test1 testEID = 110;
+}
+extend com.iabtechlab.openrtb.v2.BidRequest.User.EID.UID {
+  optional Test1 testUID = 110;
 }
 extend com.iabtechlab.openrtb.v2.BidRequest.UserAgent {
   optional Test1 testUserAgent = 110;

@@ -25,5 +25,8 @@ line after checkout or after any mvn clean.
 
 ## Release notes
 
+### IAB-3.0.0
+- Update to the proto-to-JSON conversion for a few fields that are integer in the OpenRTB spec that *were* being sent as booleans in JSON, and *now* are sent as integers.
+
 ### IAB-2.0.0
 - Update the index for `$.user.consent` and `$.content.data` to match Google's choices, as we iterate towards a single specification. Note this is a breaking change from previous versions.
